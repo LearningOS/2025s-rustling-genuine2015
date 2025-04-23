@@ -2,10 +2,10 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
-use std::cmp::Ord;
+use std::cmp::{Ord, Ordering};
 use std::default::Default;
+use std::fmt::{write, Display, Formatter};
 
 pub struct Heap<T>
 where
@@ -38,27 +38,41 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+
+        let mut bubble = self.count;
+        while bubble != 1 {
+            let parent = bubble >> 1;
+            if (self.comparator)(&self.items[bubble], &self.items[parent]) {
+                self.items.swap(bubble, parent);
+                bubble = parent;
+            } else {
+                break;
+            }
+        }
     }
 
-    fn parent_idx(&self, idx: usize) -> usize {
-        idx / 2
-    }
+    fn parent_idx(&self, idx: usize) -> usize { idx / 2 }
 
-    fn children_present(&self, idx: usize) -> bool {
-        self.left_child_idx(idx) <= self.count
-    }
+    fn present(&self, idx: usize) -> bool { idx <= self.count }
 
-    fn left_child_idx(&self, idx: usize) -> usize {
-        idx * 2
-    }
+    fn children_present(&self, idx: usize) -> bool { self.left_child_idx(idx) <= self.count }
 
-    fn right_child_idx(&self, idx: usize) -> usize {
-        self.left_child_idx(idx) + 1
-    }
+    fn left_child_idx(&self, idx: usize) -> usize { idx << 1 }
+
+    fn right_child_idx(&self, idx: usize) -> usize { idx << 1 | 1 }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        match self.count.cmp(&(idx << 1)) {
+            Ordering::Less => panic!("No children present"), // to prevent misuse of self.items[0]
+            Ordering::Equal => idx << 1,
+            Ordering::Greater => if (self.comparator)(&self.items[idx << 1], &self.items[idx << 1 | 1]){
+                idx << 1
+            } else {
+                idx << 1 | 1
+            }
+        }
     }
 }
 
@@ -85,7 +99,25 @@ where
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+
+        let ret = self.items.swap_remove(1);
+        self.count -= 1;
+
+        let mut stone = 1;
+        while self.children_present(stone) {
+            let smallest_child_idx = self.smallest_child_idx(stone);
+            if (self.comparator)(&self.items[smallest_child_idx], &self.items[stone]) {
+                self.items.swap(stone, smallest_child_idx);
+                stone = smallest_child_idx;
+            } else {
+                break;
+            }
+        }
+
+        Some(ret)
     }
 }
 
@@ -110,6 +142,12 @@ impl MaxHeap {
         T: Default + Ord,
     {
         Heap::new(|a, b| a > b)
+    }
+}
+
+impl<T> Display for Heap<T> where T: Default + std::fmt::Debug {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", &self.items)
     }
 }
 

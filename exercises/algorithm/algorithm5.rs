@@ -2,13 +2,12 @@
 	bfs
 	This problem requires you to implement a basic BFS algorithm
 */
-
-//I AM NOT DONE
 use std::collections::VecDeque;
+use std::iter;
 
 // Define a graph
 struct Graph {
-    adj: Vec<Vec<usize>>, 
+    adj: Vec<Vec<usize>>,
 }
 
 impl Graph {
@@ -25,12 +24,30 @@ impl Graph {
         self.adj[dest].push(src); 
     }
 
+    fn nodes_count(&self) -> usize {
+        self.adj.len()
+    }
     // Perform a breadth-first search on the graph, return the order of visited nodes
     fn bfs_with_return(&self, start: usize) -> Vec<usize> {
         
 		//TODO
 
         let mut visit_order = vec![];
+        let mut visit_pending = VecDeque::new();
+        let mut visited: Vec<bool> = iter::repeat_n(false, self.nodes_count()).collect();
+
+        visit_pending.push_back(start);
+
+        while let Some(node) = visit_pending.pop_front() {
+            if visited[node] {
+                continue;
+            }
+
+            visited[node] = true;
+            visit_order.push(node);
+            visit_pending.extend(self.adj.get(node).expect("edge target out of bound"));
+        }
+
         visit_order
     }
 }

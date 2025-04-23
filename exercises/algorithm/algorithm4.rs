@@ -2,11 +2,9 @@
 	binary_search tree
 	This problem requires you to implement a basic interface for a binary tree
 */
-
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
-
+use std::ops::Deref;
 
 #[derive(Debug)]
 struct TreeNode<T>
@@ -50,13 +48,28 @@ where
 
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        //TODO
+        let BinarySearchTree {
+            root
+        } = self;
+
+        if root.is_none() {
+            *root = Some(Box::new(TreeNode::new(value)));
+        } else {
+            root.as_mut().unwrap().as_mut().insert(value);
+        }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
         //TODO
-        true
+        let BinarySearchTree {
+            root
+        } = self;
+
+        root.as_ref()
+            .map(Box::as_ref)
+            .map(|n| n.search(value))
+            .unwrap_or(false)
     }
 }
 
@@ -66,7 +79,46 @@ where
 {
     // Insert a node into the tree
     fn insert(&mut self, value: T) {
+        let Self {
+            value: val,
+            left,
+            right
+        } = self;
+
+        let target = match (&value).cmp(val) {
+            Ordering::Less => left,
+            Ordering::Greater => right,
+            Ordering::Equal => return,
+        };
+
+        if target.is_none() {
+            *target = Some(Box::new(TreeNode::new(value)));
+        } else {
+            target.as_mut().unwrap().as_mut().insert(value);
+        }
+    }
+
+    fn search(&self, value: T) -> bool {
         //TODO
+        let Self {
+            value: val,
+            left,
+            right
+        } = self;
+
+        let target = if &value < val {
+            left
+        } else if &value == val {
+            return true
+        } else {
+            right
+        };
+
+        target
+            .as_ref()
+            .map(Box::as_ref)
+            .map(|n| n.search(value))
+            .unwrap_or(false)
     }
 }
 

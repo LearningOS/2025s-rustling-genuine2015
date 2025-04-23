@@ -7,8 +7,6 @@
 // Execute `rustlings hint structs3` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
-
 #[derive(Debug)]
 struct Package {
     sender_country: String,
@@ -29,12 +27,29 @@ impl Package {
         }
     }
 
-    fn is_international(&self) -> ??? {
-        // Something goes here...
+    /// Returns true if the sender_country is different from the recipient_country.
+    ///
+    /// # Example:
+    /// ```
+    /// assert!(!Package::new("China", "China", 1).is_international())
+    /// assert!(Package::new("Russia", "US", 1).is_international())
+    /// ```
+    fn is_international(&self) -> bool {
+        self.sender_country != self.recipient_country
     }
 
-    fn get_fees(&self, cents_per_gram: i32) -> ??? {
-        // Something goes here...
+    /// Calculate the transport fee
+    /// by multiplying self.weight in grams with the given cents_per_gram.
+    ///
+    /// # Example:
+    /// ```
+    /// assert_eq!(
+    ///     Package::new("China", "China", 10).get_fee(10),
+    ///     100,
+    /// )
+    /// ```
+    fn get_fees(&self, cents_per_gram: i32) -> i32 {
+        self.weight_in_grams * cents_per_gram
     }
 }
 

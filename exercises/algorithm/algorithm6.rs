@@ -2,8 +2,6 @@
 	dfs
 	This problem requires you to implement a basic DFS traversal
 */
-
-// I AM NOT DONE
 use std::collections::HashSet;
 
 struct Graph {
@@ -19,11 +17,31 @@ impl Graph {
 
     fn add_edge(&mut self, src: usize, dest: usize) {
         self.adj[src].push(dest);
-        self.adj[dest].push(src); 
+        self.adj[dest].push(src);
     }
 
-    fn dfs_util(&self, v: usize, visited: &mut HashSet<usize>, visit_order: &mut Vec<usize>) {
-        //TODO
+    fn visit_anyway(
+        &self,
+        v: usize,
+        visited: &mut HashSet<usize>,
+        visit_order: &mut Vec<usize>
+    ) {
+        visited.insert(v);
+        visit_order.push(v);
+    }
+    fn dfs_util(
+        &self,
+        v: usize,
+        visited: &mut HashSet<usize>,
+        visit_order: &mut Vec<usize>,
+    ) {
+        self.visit_anyway(v, visited, visit_order);
+        let visit_pending = self.adj[v].clone();
+        for vv in visit_pending {
+            if !visited.contains(&vv) {
+                self.dfs_util(vv, visited, visit_order);
+            }
+        }
     }
 
     // Perform a depth-first search on the graph, return the order of visited nodes

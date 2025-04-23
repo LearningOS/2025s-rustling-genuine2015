@@ -2,11 +2,11 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
+use std::cmp::Ordering;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -69,14 +69,76 @@ impl<T> LinkedList<T> {
             },
         }
     }
+
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+    where T: Ord + Clone
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        fn into_vec<T: Clone>(list: LinkedList<T>) -> Vec<T> {
+            let mut vec: Vec<T> = Vec::with_capacity(list.length as usize);
+
+            let mut node_ptr = list.start;
+            while let Some(this) = node_ptr {
+                let this = unsafe { this.as_ref() };
+                let obj = this.val.clone();
+                vec.push(obj);
+                node_ptr = this.next;
+            }
+
+            assert_eq!(vec.len(), list.length as usize);
+
+            vec
         }
+
+        fn merge_sorted_vecs<T: Ord>(mut vec1: Vec<T>, mut vec2: Vec<T>) -> Vec<T> {
+            let mut result = Vec::with_capacity(vec1.len() + vec2.len());
+            let mut iter1 = vec1.drain(..);
+            let mut iter2 = vec2.drain(..);
+
+            let mut next1 = iter1.next();
+            let mut next2 = iter2.next();
+
+            while next1.is_some() && next2.is_some() {
+                match next1.as_ref().unwrap().cmp(next2.as_ref().unwrap()) {
+                    std::cmp::Ordering::Less => {
+                        result.push(next1.take().unwrap());
+                        next1 = iter1.next();
+                    }
+                    std::cmp::Ordering::Greater => {
+                        result.push(next2.take().unwrap());
+                        next2 = iter2.next();
+                    }
+                    std::cmp::Ordering::Equal => {
+                        result.push(next1.take().unwrap());
+                        result.push(next2.take().unwrap());
+                        next1 = iter1.next();
+                        next2 = iter2.next();
+                    }
+                }
+            }
+
+            if let Some(remaining) = next1 {
+                result.push(remaining);
+            } else if let Some(remaining) = next2 {
+                result.push(remaining);
+            }
+
+            result.extend(iter1);
+            result.extend(iter2);
+
+            result
+        }
+
+        let vec_a = into_vec(list_a);
+        let vec_b = into_vec(list_b);
+
+        let vec_merged = merge_sorted_vecs(vec_a, vec_b);
+
+        let mut target = LinkedList::<T>::new();
+        for obj in vec_merged {
+            target.add(obj);
+        }
+
+        target
 	}
 }
 
